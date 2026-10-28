@@ -1,27 +1,63 @@
-# SpeechRecognitionUi
+# Speech Recognition UI
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.8.
+Angular 7 + Angular Material front end for turning speech into text. Runs in the browser or as an Electron desktop app.
 
-## Development server
+## Features
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+- **Speech to text** – live transcription from the microphone using the browser's Web Speech API (via [`@kamiazya/ngx-speech-recognition`](https://github.com/kamiazya/ngx-speech-recognition)). Works in Chromium-based browsers and Electron.
+- **Audio file to text** – upload a `.wav` file; it is sent to a backend that returns the transcript.
 
-## Code scaffolding
+State of both screens is kept in `AppService`, so switching tabs doesn't lose your text.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Requirements
 
-## Build
+- Node.js 10/12 (Angular CLI 7 doesn't run on modern Node; use `nvm use 12` or similar)
+- npm or yarn
+- A microphone, and a backend for file transcription (see below)
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+## Getting started
 
-## Running unit tests
+```bash
+npm install
+npm start            # dev server at http://localhost:4200
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Backend
 
-## Running end-to-end tests
+File transcription posts `multipart/form-data` (field `file`) to:
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+```
+POST {apiUrl}/audio-to-text
+```
 
-## Further help
+and expects the transcript text in the response. `apiUrl` is set in [`src/environments/environment.ts`](src/environments/environment.ts) (default `http://localhost:80/api/v1`).
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+> `environment.prod.ts` has no `apiUrl` yet – add it before making a production build, or uploads will fail.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm start` | Dev server with live reload |
+| `npm run build` | Build to `dist/speech-recognition-ui/` |
+| `npm run electron` | Build and launch in Electron |
+| `npm run electron-aot` | Production build and launch in Electron |
+| `npm test` | Unit tests (Karma + Jasmine) |
+| `npm run e2e` | End-to-end tests (Protractor) |
+| `npm run lint` | TSLint |
+
+## Project structure
+
+```
+main.js                         Electron entry point (loads dist/ build)
+src/app/
+  core/                         layout, header, navbar, ApiService (HTTP wrapper)
+  modules/
+    transform-speech-in-text/   live microphone transcription
+    transform-audio-file-to-text/  .wav upload + transcript
+    welcome/, special-actions/  placeholders
+  shared/
+    components/upload-file/     file picker
+    services/                   AppService (screen state), UploadFileService
+    constants/, models/
+```
